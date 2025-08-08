@@ -17,13 +17,17 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 
 seed_everything(2022)
 
-bam_data_dir = "/media/xzy/HDD_4T_2/DATASETS/Alignment_data/PacBio-CLR/"
-vcf_data_dir = "../data/"
-data_dir = "../data/"
+# bam_data_dir = "../new_data/"
+bam_data_dir = "../new_data/"
+vcf_data_dir = "../new_data/"
+data_dir = "../new_data/"
 
-bam_path = bam_data_dir + "HG002-PacBio-CLR-minimap2.sorted.bam"
+# bam_path = bam_data_dir + "HG002-PacBio-CLR-minimap2.sorted.bam"
 # bam_path = data_dir + "NA12878_S1.bam"
 # bam_path = data_dir + "NA12878_NGMLR_sorted.bam"
+# bam_path = bam_data_dir + "test.bam"
+# bam_path = bam_data_dir + "HG002_PacBio_GRCh38.bam"
+bam_path = bam_data_dir + "HG00096.sorted.bam"
 
 ins_vcf_filename = vcf_data_dir + "insert_result_data.csv.vcf"
 del_vcf_filename = vcf_data_dir + "delete_result_data.csv.vcf"
@@ -39,7 +43,7 @@ def position(sum_data):
     n_position = []
     # insert
     insert_result_data = pd.read_csv(ins_vcf_filename, sep="\t", index_col=0)
-    insert_chromosome = insert_result_data[insert_result_data["CHROM"] == chromosome]
+    insert_chromosome = insert_result_data[insert_result_data["CHROM"] == chromosome[3:] if chromosome.startswith("chr") else chromosome]
     row_pos = []
     for index, row in insert_chromosome.iterrows():
         row_pos.append(row["POS"])
@@ -63,7 +67,7 @@ def position(sum_data):
 
     # delete
     delete_result_data = pd.read_csv(del_vcf_filename, sep="\t", index_col=0)
-    delete_chromosome = delete_result_data[delete_result_data["CHROM"] == chromosome]
+    delete_chromosome = delete_result_data[delete_result_data["CHROM"] == chromosome[3:] if chromosome.startswith("chr") else chromosome]
     row_pos = []
     row_end = []
     for index, row in delete_chromosome.iterrows():
@@ -138,6 +142,9 @@ def create_image(sum_data):
     for i, b_e in enumerate(ins_position):
         zoom = 1
         fail = 1
+        if b_e[0] >= b_e[1]:
+            print(f"⚠️ Skip invalid region (begin >= end): {chromosome}:{b_e[0]}-{b_e[1]}")
+            continue
         while fail:
             try:
                 fail = 0
@@ -154,6 +161,9 @@ def create_image(sum_data):
     for i, b_e in enumerate(del_position):
         zoom = 1
         fail = 1
+        if b_e[0] >= b_e[1]:
+            print(f"⚠️ Skip invalid region (begin >= end): {chromosome}:{b_e[0]}-{b_e[1]}")
+            continue
         while fail:
             try:
                 fail = 0
@@ -171,6 +181,9 @@ def create_image(sum_data):
         zoom = 1
 
         fail = 1
+        if b_e[0] >= b_e[1]:
+            print(f"⚠️ Skip invalid region (begin >= end): {chromosome}:{b_e[0]}-{b_e[1]}")
+            continue
         while fail:
             try:
                 fail = 0

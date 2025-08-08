@@ -26,13 +26,16 @@ from hyperopt import hp
 
 seed_everything(2022)
 
-bam_data_dir = "../data/"
-vcf_data_dir = "../data/"
-data_dir = "../data/"
+# bam_data_dir = "../new_data/"
+bam_data_dir = "../new_data/"
+vcf_data_dir = "../new_data/"
+data_dir = "/nas03/gyzzhu/CSV-Filter/data/"
 bs = 32
-my_label = "ResNet34"
+my_label = "ResNet50_new_data"
 
-bam_path = bam_data_dir + "HG002-PacBio-HiFi-minimap2.sorted.bam"
+# bam_path = bam_data_dir + "test.bam"
+# bam_path = bam_data_dir + "HG002_PacBio_GRCh38.bam"
+bam_path = bam_data_dir + "HG00096.sorted.bam"
 
 ins_vcf_filename = vcf_data_dir + "insert_result_data.csv.vcf"
 del_vcf_filename = vcf_data_dir + "delete_result_data.csv.vcf"
@@ -66,25 +69,43 @@ checkpoint_callback = ModelCheckpoint(
 
 
 def main_train():
-    config = {
-        "lr": 7.1873e-6,
-        "batch_size": 14,
-        "beta1": 0.9,
-        "beta2": 0.999,
-        'weight_decay': 0.0011615,
-    }
+    # config = {
+    #     "lr": 7.1873e-6,
+    #     "batch_size": 14,
+    #     "beta1": 0.9,
+    #     "beta2": 0.999,
+    #     'weight_decay': 0.0011615,
+    # }
 
-    model = IDENet(data_dir, config)
+    # model = IDENet(data_dir, config)
 
-    trainer = pl.Trainer(
-        max_epochs=30,
-        gpus=1,
-        check_val_every_n_epoch=1,
-        logger=logger,
-        callbacks=[checkpoint_callback],
-    )
+    # trainer = pl.Trainer(
+    #     max_epochs=30,
+    #     gpus=1,
+    #     check_val_every_n_epoch=1,
+    #     logger=logger,
+    #     callbacks=[checkpoint_callback],
+    # )
 
-    trainer.fit(model)
+    # trainer.fit(model)
+    for algo in ["delly", "manta", "smoove", "wham"]:
+        config = {
+            "lr": 7.1873e-6,
+            "batch_size": 14,
+            "beta1": 0.9,
+            "beta2": 0.999,
+            'weight_decay': 0.0011615,
+            'model': algo
+        }
+        model = IDENet(data_dir, config)
+        trainer = pl.Trainer(
+            max_epochs=30,
+            gpus=1,
+            check_val_every_n_epoch=1,
+            logger=TensorBoardLogger(os.path.join(data_dir, f"channel_predict_{algo}"), name=f"ResNet34_{algo}"),
+            callbacks=[ModelCheckpoint(dirpath=f"./checkpoints_predict/{algo}", filename='{epoch:02d}-{validation_mean:.2f}-{train_mean:.2f}', monitor="validation_mean", save_top_k=1, mode="max")]
+        )
+        trainer.fit(model)
 
 
 def train_tune(config, checkpoint_dir=None, num_epochs=200, num_gpus=1):

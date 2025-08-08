@@ -130,7 +130,9 @@ class IDENet(pl.LightningModule):
         self.batch_size = config["batch_size"]
         model_name = config["model"]
 
-        self.path = path
+        # self.path = path
+        self.path = path + f"image/{config['model']}/"  # 算法特定路径
+        # self.conv2ds = conv2ds_sequential([7, 16, 32, 64])  # 7个输入通道
 
         # conv2d_dim = [1, 1, 3, 3]
         # self.conv2ds = conv2ds_sequential(conv2d_dim)

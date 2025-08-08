@@ -24,10 +24,14 @@ from ray.tune.integration.pytorch_lightning import TuneReportCallback, \
 import list2img
 from hyperopt import hp
 
-bam_data_dir = "/media/xzy/HDD_4T_2/DATASETS/Alignment_data/PacBio-CLR/"
-vcf_data_dir = "../data/"
-data_dir = "../data/"
-bam_path = bam_data_dir + "HG002-PacBio-CLR-minimap2.sorted.bam"
+# bam_data_dir = "../new_data/"
+bam_data_dir = "../new_data/"
+vcf_data_dir = "../new_data/"
+data_dir = "../new_data/"
+# bam_path = bam_data_dir + "HG002-PacBio-CLR-minimap2.sorted.bam"
+# bam_path = bam_data_dir + "test.bam"
+# bam_path = bam_data_dir + "HG002_PacBio_GRCh38.bam"
+bam_path = bam_data_dir + "HG00096.sorted.bam"
 
 ins_vcf_filename = vcf_data_dir + "insert_result_data.csv.vcf"
 del_vcf_filename = vcf_data_dir + "delete_result_data.csv.vcf"
@@ -43,7 +47,8 @@ chr_list_sam_file = sam_file.references
 chr_length_sam_file = sam_file.lengths
 sam_file.close()
 
-allowed_chromosomes = set(f"{i}" for i in range(1, 23)) | {"X", "Y"}
+# allowed_chromosomes = set(f"{i}" for i in range(1, 23)) | {"X", "Y"}
+allowed_chromosomes = set(f"chr{i}" for i in range(1, 23)) | {"chrX", "chrY"}
 
 chr_list = []
 chr_length = []
@@ -51,6 +56,7 @@ chr_length = []
 for chrom, length in zip(chr_list_sam_file, chr_length_sam_file):
     if chrom in allowed_chromosomes:
         chr_list.append(chrom)
+        # chr_list.append(chrom[3:] if chrom.startswith("chr") else chrom)
         chr_length.append(length)
 
 hight = 224
@@ -81,7 +87,7 @@ else:
             # insert
             insert_result_data = pd.read_csv(
                 ins_vcf_filename, sep="\t", index_col=0)
-            insert_chromosome = insert_result_data[insert_result_data["CHROM"] == chromosome]
+            insert_chromosome = insert_result_data[insert_result_data["CHROM"] == chromosome[3:] if chromosome.startswith("chr") else chromosome]
             row_pos = []
             for index, row in insert_chromosome.iterrows():
                 row_pos.append(row["POS"])
@@ -106,7 +112,7 @@ else:
             # delete
             delete_result_data = pd.read_csv(
                 del_vcf_filename, sep="\t", index_col=0)
-            delete_chromosome = delete_result_data[delete_result_data["CHROM"] == chromosome]
+            delete_chromosome = delete_result_data[delete_result_data["CHROM"] == chromosome[3:] if chromosome.startswith("chr") else chromosome]
             row_pos = []
             row_end = []
             for index, row in delete_chromosome.iterrows():

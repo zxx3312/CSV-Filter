@@ -25,7 +25,7 @@ from ray.tune.integration.pytorch_lightning import TuneReportCallback, \
 import list2img
 from hyperopt import hp
 
-data_dir = "../data/"
+data_dir = "../new_data/"
 
 bam_path = data_dir + "sorted_final_merged.bam"
 

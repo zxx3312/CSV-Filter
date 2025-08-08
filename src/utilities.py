@@ -80,6 +80,7 @@ def to_input_image_single(img):
 class IdentifyDataset(torch.utils.data.Dataset):
     def __init__(self, path, transform):
 
+        # print(os.listdir(path + "ins"))
         self.insfile_list = os.listdir(path + "ins")
         self.delfile_list = os.listdir(path + "del")
         self.nfile_list = os.listdir(path + "n")
@@ -255,6 +256,71 @@ def cigar_new_img_single_optimal(bam_path, chromosome, begin, end, zoom):
     sam_file.close()
     
     return cigars_img
+
+# def cigar_new_img_single_optimal(bam_path, chromosome, begin, end, zoom, features=None):
+#     hight = 224
+#     resize = transforms.Resize([hight, hight])
+#     cigars_img = torch.zeros([7, hight, hight])  # 7个通道：4个CIGAR + 3个特征
+
+#     # 处理 CIGAR 逻辑
+#     r_start = []
+#     r_end = []
+#     sam_file = pysam.AlignmentFile(bam_path, "rb")
+#     for read in sam_file.fetch(chromosome, begin, end):
+#         if read.reference_start is not None:
+#             r_start.append(read.reference_start)
+#         if read.reference_end is not None:
+#             r_end.append(read.reference_end)
+    
+#     if r_start:
+#         ref_min = np.min(r_start)
+#         ref_max = np.max(r_end)
+#         span = ref_max - ref_min
+        
+#         # 限制 span 避免过大
+#         if span > hight * zoom:
+#             span = hight * zoom
+#             ref_max = ref_min + span
+        
+#         # 初始化临时张量，4个CIGAR通道
+#         cigars_temp = torch.zeros([4, len(r_start), span])  # 通道0:M, 1:I, 2:S, 3:D
+#         for i, read in enumerate(sam_file.fetch(chromosome, begin, end)):
+#             max_terminal = read.reference_start - ref_min
+#             for operation, length in read.cigar:
+#                 if max_terminal >= span:
+#                     continue  # 防止越界
+#                 if operation == 0:  # Match/Mismatch
+#                     cigars_temp[0, i, max_terminal:min(max_terminal + length, span)] = 255
+#                     max_terminal += length
+#                 elif operation == 1:  # Insertion
+#                     cigars_temp[1, i, max_terminal:min(max_terminal + length, span)] = 255
+#                     max_terminal += 0  # Insertion 不增加参考坐标
+#                 elif operation == 4:  # Softclip
+#                     cigars_temp[2, i, max_terminal:min(max_terminal + length, span)] = 255
+#                     max_terminal += 0  # Softclip 不增加参考坐标
+#                 elif operation == 2:  # Deletion
+#                     cigars_temp[3, i, max_terminal:min(max_terminal + length, span)] = 255
+#                     max_terminal += length
+#                 elif operation in [3, 7, 8]:  # N, =, X
+#                     max_terminal += length
+        
+#         # 调整到目标尺寸 [4, hight, hight]
+#         cigars_temp = resize(cigars_temp)
+#         cigars_img[:4] = cigars_temp  # 赋值到前4个通道
+#     else:
+#         cigars_img[:4] = torch.zeros([4, hight, hight])  # 4个CIGAR通道初始化为0
+
+#     # 添加 kmer, softclip, cov 特征
+#     if features:
+#         for i, feat_name in enumerate(["kmer", "softclip", "cov"]):
+#             feat = torch.tensor(features[feat_name][:span], dtype=torch.float).unsqueeze(0).unsqueeze(0)  # [1, 1, span]
+#             if feat.shape[-1] < span:
+#                 feat = torch.nn.functional.pad(feat, (0, span - feat.shape[-1]))  # 填充到 span 长度
+#             feat = feat / (feat.max() + 1e-6)  # 归一化
+#             cigars_img[4 + i] = resize(feat)  # 调整到 [hight, hight]
+
+#     sam_file.close()
+#     return cigars_img
 
 def cigar_new_img_single_memory(bam_path, chromosome, begin, end):
     r_start = []

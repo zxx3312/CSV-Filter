@@ -110,7 +110,7 @@ python filter.py selected_model
 
 In train.py file, modify the data dirction and name of the model.
 ```python
-data_dir = "../data/"
+data_dir = "../new_data/"
 bs = 128
 my_label = "resnet50"
 ```

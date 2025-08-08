@@ -21,7 +21,7 @@ if len(sys.argv) < 2:
 seed_everything(2022)
 
 root_dir = "../"
-vcf_data_dir = "../data/"
+vcf_data_dir = "../new_data/"
 vcf_name = "sniffles2-CLR-minimap2"
 
 config = {

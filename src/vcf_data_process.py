@@ -1,7 +1,9 @@
 import pandas as pd
 import re
+import os
+import glob
 
-data_dir = "../data/"
+data_dir = "../new_data/"
 
 def list_save(filename, data):
     file = open(filename,'w')
@@ -18,7 +20,8 @@ def set_save(filename, data):
 insert = ["CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tHG002\n"]
 delete = ["CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tHG002\n"]
 
-filename = data_dir + "sniffles2-CLR-minimap2.vcf"
+# filename = data_dir + "sniffles2-CLR-minimap2.vcf"
+filename = data_dir + "HG002_SVs_Tier1_v0.6_PASS.vcf"
 
 chr_list = set()
 
